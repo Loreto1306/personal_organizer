@@ -9,12 +9,12 @@ router.get('/', (req, res) => {
   try {
     const objectives = db.prepare('SELECT * FROM objectives ORDER BY createdAt DESC').all();
     const objectivesWithGoals = objectives.map(obj => {
-      const goals = db.prepare('SELECT * FROM goals WHERE objectiveId = ?').all();
+      const goals = db.prepare('SELECT * FROM goals WHERE objectiveId = ?').all(obj.id);
       return { ...obj, goals };
     });
     res.json(objectivesWithGoals);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar objetivos' });
+    res.status(500).json({ status: 'error', message: 'Falha ao sincronizar objetivos estratégicos.' });
   }
 });
 
@@ -29,13 +29,13 @@ router.post('/', (req, res) => {
     `).run(id, title, description || null, deadline || null);
 
     const newObjective = db.prepare('SELECT * FROM objectives WHERE id = ?').get(id);
-    res.status(201).json(newObjective);
+    res.status(201).json({ status: 'success', message: 'Objetivo de Elite estabelecido.', data: { ...newObjective, goals: [] } });
   } catch (error) {
-    res.status(400).json({ error: 'Erro ao criar objetivo' });
+    res.status(400).json({ status: 'error', message: 'Erro ao registrar nova diretriz estratégica.' });
   }
 });
 
-// Adicionar meta a um objetivo
+// Criar meta vinculada a um objetivo
 router.post('/:objectiveId/goals', (req, res) => {
   const { objectiveId } = req.params;
   const { title, description, targetValue } = req.body;
@@ -44,12 +44,12 @@ router.post('/:objectiveId/goals', (req, res) => {
     db.prepare(`
       INSERT INTO goals (id, title, description, targetValue, objectiveId)
       VALUES (?, ?, ?, ?, ?)
-    `).run(id, title, description || null, parseFloat(targetValue) || 0, objectiveId);
+    `).run(id, title, description || null, parseFloat(targetValue), objectiveId);
 
     const newGoal = db.prepare('SELECT * FROM goals WHERE id = ?').get(id);
-    res.status(201).json(newGoal);
+    res.status(201).json({ status: 'success', message: 'Meta vinculada ao objetivo mestre.', data: newGoal });
   } catch (error) {
-    res.status(400).json({ error: 'Erro ao criar meta' });
+    res.status(400).json({ status: 'error', message: 'Falha ao criar meta secundária.' });
   }
 });
 

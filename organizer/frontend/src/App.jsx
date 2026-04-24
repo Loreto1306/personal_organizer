@@ -1,171 +1,106 @@
 import { useState, useEffect } from 'react'
-import { Plus, CheckCircle2, Circle, Trash2, LayoutDashboard, ListTodo, Wallet, TrendingUp } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { LayoutDashboard, ListTodo, Wallet, TrendingUp, Calendar, Menu, X as CloseIcon } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
 import { taskService } from '@/lib/api'
+import { AgendaView } from '@/components/AgendaView'
+import { InvestmentsView } from '@/components/InvestmentsView'
+import { TasksView } from '@/components/TasksView'
+import { DashboardView } from '@/components/DashboardView'
 
 function App() {
-  const [tasks, setTasks] = useState([])
-  const [newTaskTitle, setNewTaskTitle] = useState('')
-  const [activeTab, setActiveTab] = useState('tasks')
+  const [activeTab, setActiveTab] = useState('dashboard')
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  useEffect(() => {
-    loadTasks()
-  }, [])
-
-  const loadTasks = async () => {
-    try {
-      const data = await taskService.getAll()
-      setTasks(data)
-    } catch (error) {
-      console.error("Erro ao carregar tarefas:", error)
+  const getTitle = () => {
+    switch(activeTab) {
+      case 'dashboard': return 'Visão Estratégica'
+      case 'tasks': return 'Ações & Foco'
+      case 'agenda': return 'Meu Cronograma'
+      case 'investments': return 'Investimentos'
+      case 'finance': return 'Fluxo de Caixa'
+      default: return 'Dashboard'
     }
   }
 
-  const handleAddTask = async (e) => {
-    e.preventDefault()
-    if (!newTaskTitle.trim()) return
-    try {
-      const newTask = await taskService.create({ title: newTaskTitle })
-      setTasks([newTask, ...tasks])
-      setNewTaskTitle('')
-    } catch (error) {
-      console.error("Erro ao adicionar tarefa:", error)
-    }
-  }
-
-  const toggleTask = async (task) => {
-    try {
-      const updated = await taskService.update(task.id, { completed: !task.completed })
-      setTasks(tasks.map(t => t.id === task.id ? updated : t))
-    } catch (error) {
-      console.error("Erro ao atualizar tarefa:", error)
-    }
-  }
-
-  const deleteTask = async (id) => {
-    try {
-      await taskService.delete(id)
-      setTasks(tasks.filter(t => t.id !== id))
-    } catch (error) {
-      console.error("Erro ao deletar tarefa:", error)
-    }
-  }
+  const menuItems = [
+    { id: 'dashboard', icon: LayoutDashboard, label: 'Painel' },
+    { id: 'agenda', icon: Calendar, label: 'Cronograma' },
+    { id: 'tasks', icon: ListTodo, label: 'Tarefas' },
+    { id: 'finance', icon: Wallet, label: 'Finanças' },
+    { id: 'investments', icon: TrendingUp, label: 'Ativos' },
+  ]
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex">
-      {/* Sidebar Lateral */}
-      <aside className="w-64 border-r border-slate-800 bg-slate-900/50 p-6 flex flex-col gap-8">
-        <div className="flex items-center gap-2 px-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold">O</div>
-          <span className="text-xl font-bold tracking-tight">Organizer</span>
+    <div className="min-h-screen text-white flex flex-col md:flex-row font-sans selection:bg-white/10 relative overflow-hidden">
+      
+      {/* Botão Mobile Menu */}
+      <div className="md:hidden flex items-center justify-between p-6 sidebar-frosted z-50">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center font-black text-black text-[10px] italic">LS</div>
+          <span className="text-sm font-bold tracking-tight">SYSTEM</span>
+        </div>
+        <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          {isMobileMenuOpen ? <CloseIcon size={24} /> : <Menu size={24} />}
+        </Button>
+      </div>
+
+      {/* Sidebar - Desktop & Mobile */}
+      <aside className={`
+        fixed md:relative inset-0 md:inset-auto z-40 w-full md:w-72 sidebar-frosted p-8 flex flex-col gap-10 transition-transform duration-500
+        ${isMobileMenuOpen ? 'translate-x-0 mt-10' : '-translate-x-full md:translate-x-0'}
+      `}>
+        <div className="hidden md:flex items-center gap-3 px-2">
+          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center font-black text-black text-[14px] italic shadow-lg shadow-white/10">LS</div>
+          <div className="flex flex-col">
+
+            <span className="text-sm font-bold tracking-tight leading-none">LOR.S</span>
+            <span className="text-[8px] font-black tracking-[0.3em] text-white/40 uppercase">System</span>
+          </div>
         </div>
 
-        <nav className="flex flex-col gap-2">
-          <Button 
-            variant={activeTab === 'dashboard' ? 'secondary' : 'ghost'} 
-            className="justify-start gap-3"
-            onClick={() => setActiveTab('dashboard')}
-          >
-            <LayoutDashboard size={20} /> Dashboard
-          </Button>
-          <Button 
-            variant={activeTab === 'tasks' ? 'secondary' : 'ghost'} 
-            className="justify-start gap-3"
-            onClick={() => setActiveTab('tasks')}
-          >
-            <ListTodo size={20} /> Tarefas
-          </Button>
-          <Button 
-            variant={activeTab === 'finance' ? 'secondary' : 'ghost'} 
-            className="justify-start gap-3"
-            onClick={() => setActiveTab('finance')}
-          >
-            <Wallet size={20} /> Finanças
-          </Button>
-          <Button 
-            variant={activeTab === 'investments' ? 'secondary' : 'ghost'} 
-            className="justify-start gap-3"
-            onClick={() => setActiveTab('investments')}
-          >
-            <TrendingUp size={20} /> Investimentos
-          </Button>
+        <nav className="flex flex-col gap-1 mt-4">
+          {menuItems.map((item) => (
+            <Button 
+              key={item.id}
+              variant="ghost" 
+              className={`justify-start gap-3 rounded-xl px-4 py-7 text-sm transition-all duration-300 ${
+                activeTab === item.id 
+                ? 'nav-active-glass' 
+                : 'text-white/40 hover:text-white/80 hover:bg-white/5'
+              }`}
+              onClick={() => {
+                setActiveTab(item.id)
+                setIsMobileMenuOpen(false)
+              } }
+            >
+              <item.icon size={20} className={activeTab === item.id ? 'text-white' : 'opacity-40'} /> 
+              {item.label}
+            </Button>
+          ))}
         </nav>
       </aside>
 
       {/* Conteúdo Principal */}
-      <main className="flex-1 p-8 overflow-y-auto">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold capitalize">{activeTab === 'tasks' ? 'Minhas Tarefas' : activeTab}</h1>
-          <p className="text-slate-400">Gerencie seu dia e alcance seus objetivos.</p>
-        </header>
+      <main className="flex-1 p-6 md:p-12 overflow-y-auto w-full relative">
+        <div className="max-w-6xl mx-auto w-full">
+          <header className="mb-12 mt-4 md:mt-0">
+            <h1 className="text-3xl md:text-clean-title">{getTitle()}</h1>
+            <p className="text-xs md:text-sm text-white/40 mt-1 font-medium italic">Foco e clareza no processo.</p>
+          </header>
 
-        {activeTab === 'tasks' && (
-          <div className="max-w-4xl space-y-6">
-            {/* Input de Nova Tarefa */}
-            <form onSubmit={handleAddTask} className="flex gap-2">
-              <Input 
-                placeholder="O que precisa ser feito hoje?" 
-                value={newTaskTitle}
-                onChange={(e) => setNewTaskTitle(e.target.value)}
-                className="bg-slate-900 border-slate-800 focus-visible:ring-blue-500"
-              />
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                <Plus size={20} className="mr-2" /> Adicionar
-              </Button>
-            </form>
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-700 w-full">
+            {activeTab === 'dashboard' && <DashboardView />}
+            {activeTab === 'agenda' && <AgendaView />}
+            {activeTab === 'investments' && <InvestmentsView />}
+            {activeTab === 'tasks' && <TasksView />}
 
-            {/* Lista de Tarefas */}
-            <Card className="bg-slate-900 border-slate-800">
-              <CardHeader>
-                <CardTitle className="text-slate-100">Pendentes</CardTitle>
-                <CardDescription className="text-slate-400">
-                  Você tem {tasks.filter(t => !t.completed).length} tarefas para concluir.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {tasks.length === 0 ? (
-                  <p className="text-center text-slate-500 py-8">Nenhuma tarefa encontrada. Comece adicionando uma!</p>
-                ) : (
-                  tasks.map((task) => (
-                    <div 
-                      key={task.id} 
-                      className="flex items-center justify-between p-3 rounded-lg bg-slate-950/50 border border-slate-800 hover:border-slate-700 transition-colors group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Checkbox 
-                          checked={task.completed} 
-                          onCheckedChange={() => toggleTask(task)}
-                          className="border-slate-700 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                        />
-                        <span className={`${task.completed ? 'line-through text-slate-500' : 'text-slate-200'}`}>
-                          {task.title}
-                        </span>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-400 transition-all"
-                        onClick={() => deleteTask(task.id)}
-                      >
-                        <Trash2 size={18} />
-                      </Button>
-                    </div>
-                  ))
-                )}
-              </CardContent>
-            </Card>
+            {activeTab === 'finance' && (
+              <div className="flex flex-col items-center justify-center h-[50vh] text-white/20">
+                <p className="text-xs font-black uppercase tracking-[0.3em]">Desenvolvimento em curso</p>
+              </div>
+            )}
           </div>
-        )}
-
-        {activeTab !== 'tasks' && (
-          <div className="flex flex-col items-center justify-center h-[60vh] text-slate-500">
-            <LayoutDashboard size={48} className="mb-4 opacity-20" />
-            <p>Seção {activeTab} em desenvolvimento...</p>
-          </div>
-        )}
+        </div>
       </main>
     </div>
   )
