@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
-import { LayoutDashboard, ListTodo, Wallet, TrendingUp, Calendar, Menu, X as CloseIcon } from 'lucide-react'
+import { LayoutDashboard, ListTodo, Wallet, TrendingUp, Calendar, Menu, X as CloseIcon, MessageSquare } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { taskService } from '@/lib/api'
 import { AgendaView } from '@/components/AgendaView'
 import { InvestmentsView } from '@/components/InvestmentsView'
 import { TasksView } from '@/components/TasksView'
 import { DashboardView } from '@/components/DashboardView'
+import { FinanceView } from '@/components/FinanceView'
+import { ChatView } from '@/components/ChatView'
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -18,6 +20,7 @@ function App() {
       case 'agenda': return 'Meu Cronograma'
       case 'investments': return 'Investimentos'
       case 'finance': return 'Fluxo de Caixa'
+      case 'chat': return 'Lux AI Co-Pilot'
       default: return 'Dashboard'
     }
   }
@@ -28,6 +31,7 @@ function App() {
     { id: 'tasks', icon: ListTodo, label: 'Tarefas' },
     { id: 'finance', icon: Wallet, label: 'Finanças' },
     { id: 'investments', icon: TrendingUp, label: 'Ativos' },
+    { id: 'chat', icon: MessageSquare, label: 'Co-Pilot' },
   ]
 
   return (
@@ -93,12 +97,8 @@ function App() {
             {activeTab === 'agenda' && <AgendaView />}
             {activeTab === 'investments' && <InvestmentsView />}
             {activeTab === 'tasks' && <TasksView />}
-
-            {activeTab === 'finance' && (
-              <div className="flex flex-col items-center justify-center h-[50vh] text-white/20">
-                <p className="text-xs font-black uppercase tracking-[0.3em]">Desenvolvimento em curso</p>
-              </div>
-            )}
+            {activeTab === 'finance' && <FinanceView />}
+            {activeTab === 'chat' && <ChatView />}
           </div>
         </div>
       </main>

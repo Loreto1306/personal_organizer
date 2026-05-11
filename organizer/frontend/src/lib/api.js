@@ -71,6 +71,14 @@ export const financeService = {
     });
     return handleResponse(res);
   },
+  updateTransaction: async (id, data) => {
+    const res = await fetch(`${API_URL}/finance/transactions/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return handleResponse(res);
+  },
   getAssets: async () => {
     const res = await fetch(`${API_URL}/finance/assets`);
     return res.json();
@@ -88,6 +96,12 @@ export const financeService = {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
+    });
+    return handleResponse(res);
+  },
+  syncPrices: async () => {
+    const res = await fetch(`${API_URL}/finance/sync-prices`, {
+      method: 'POST',
     });
     return handleResponse(res);
   }
@@ -113,5 +127,35 @@ export const objectiveService = {
       body: JSON.stringify(data),
     });
     return handleResponse(res);
+  }
+};
+
+const AGENT_URL = 'http://localhost:8000';
+
+export const agentService = {
+  chat: async (message, symbol = "BTC/USDT") => {
+    const res = await fetch(`${AGENT_URL}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, symbol }),
+    });
+    return res.json();
+  },
+
+  analyzeCSV: async (file, symbol = "UNKNOWN", message = "Analise este gráfico e me dê sua interpretação técnica.") => {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('symbol', symbol);
+    form.append('message', message);
+    const res = await fetch(`${AGENT_URL}/analyze-csv`, {
+      method: 'POST',
+      body: form,
+    });
+    return res.json();
+  },
+
+  getStatus: async () => {
+    const res = await fetch(`${AGENT_URL}/status`);
+    return res.json();
   }
 };

@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"C:\\\\organizer\\\\personal_organizer\\\\organizer\\\\frontend\\\\src\" -Recurse -File -Force | ForEach-Object { $_.FullName })"
+    ]
+  }
+}

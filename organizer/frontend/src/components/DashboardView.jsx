@@ -86,7 +86,7 @@ export function DashboardView() {
         </div>
       </div>
 
-      {/* 3. Próximo Objetivo */}
+      {/* 3. Próximo Objetivo / Evolução Mestre */}
       <div className="glass-minimal rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 flex flex-col justify-between border-white/5 min-h-[160px]">
         <div className="p-3 rounded-2xl bg-white/5 border border-white/10 w-fit">
           <Target size={20} className="text-white/60" />
@@ -94,13 +94,16 @@ export function DashboardView() {
         <div className="mt-4 md:mt-8">
           <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white/30">Evolução Mestre</span>
           <p className="text-xs md:text-sm font-bold tracking-tight mt-1 leading-tight uppercase italic truncate">
-            {data.objectives[0]?.title || 'Definir Meta'}
+            {data.objectives[0]?.title || 'Definir Meta Estratégica'}
           </p>
           <div className="flex items-center gap-2 mt-3">
-             <div className="h-1 w-12 bg-white/20 rounded-none overflow-hidden">
-                <div className="h-full bg-white w-[75%]"></div>
+             <div className="h-1 w-full bg-white/10 rounded-none overflow-hidden">
+                <div 
+                  className="h-full bg-white transition-all duration-1000" 
+                  style={{ width: `${data.objectives[0]?.progress || 0}%` }}
+                ></div>
              </div>
-             <span className="text-[8px] font-black">75%</span>
+             <span className="text-[8px] font-black">{data.objectives[0]?.progress || 0}%</span>
           </div>
         </div>
       </div>
